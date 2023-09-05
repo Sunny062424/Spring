@@ -1,9 +1,11 @@
 package com.example.demo.controller;
 
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -14,13 +16,10 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.example.demo.service.FileDto;
 
+
 @Controller
 public class Testcon {
     
-    @RequestMapping("/")
-    public String mainpage(){
-        return "home";
-    }
 
     @RequestMapping("/main")
     public String uploadpage(){
@@ -44,4 +43,6 @@ public class Testcon {
         model.addAttribute("files", list);
         return "result";
     }
+
+
 }

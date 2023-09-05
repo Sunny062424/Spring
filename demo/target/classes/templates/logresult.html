@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Log Result</title>
+</head>
+<body>
+    <h1>Log Result</h1>
+    <p>The word "checkME" was found <span th:text="${count}"></span> times in the log file.</p>
+
+    <h2>Log Entries:</h2>
+    <ul>
+        <!-- 리스트 순회 -->
+        <li th:each="error : ${errorList}">
+           <p>Error occured log "<span th:text="${error}"></span>"
+        </li>
+    </ul>
+    <button onclick="goBack()">이전 페이지로 돌아가기</button>
+
+    <script>
+        function goBack() {
+            window.history.back();
+        }
+    </script>
+    
+</body>
+</html>

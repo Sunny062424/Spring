@@ -5,11 +5,12 @@
     <title>Document</title>
 </head>
 <body>
-        <h1>upload file list</h1>
-        <ul th:each="file: ${files}">
-            <li><span th:text="${file.fileName}"></span>
-                <a href="#" th:tref="${'/download?fileName='+file.fileName}">[DOWNLOAD]</a>
-            </li>
-        </ul>
+    <h1>upload file list</h1>
+    <ul th:each="fileDto: ${files}">
+        <li>
+            <span th:text="${fileDto.fileName}"></span>
+            <a th:href="@{'/log?filename=' + ${fileDto.fileName}}">[분석하기]</a>
+        </li>
+    </ul>
 </body>
 </html>
