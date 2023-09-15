@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memo Service</title>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="main.css" />
+    <script>
+        // 사용자가 내용을 올바르게 입력하였는지 확인하는 메서드
+        function isValidContents(content) {
+            if (content == '') {
+                alert('내용을 입력해주세요');
+                return false;
+            }
+            if (content.trim().length > 140) {
+                alert('공백 포함 140자 이하로 입력해주세요');
+                return false;
+            }
+            return true;
+        }
+
+        // 수정버튼을 눌렀을 때 수행되는 메서드
+        function editPost(id) {
+            showEdits(id);
+            let contents = $(`#${id}-content`).text().trim();
+            $(`#${id}-textarea`).val(contents); // 수정 버튼을 눌렀을 때, 기존 작성 내용을 textarea 에 전달한다
+        }
+
+        // 숨길 버튼을 숨기고, 나타낼 버튼을 나타내는 메서드
+        function showEdits(id) {
+            $(`#${id}-editarea`).show();
+            $(`#${id}-submit`).show();
+            $(`#${id}-delete`).show();
+
+            $(`#${id}-content`).hide();
+            $(`#${id}-edit`).hide();
+        }
+
+        $(document).ready(function () {
+            // HTML 문서를 로드할 때마다 실행한다
+            getMemo();
+        })
+
+        // 모든 메모를 조회하는 메서드
+        function getMemo() {
+            // 1. 기존 메모 목록을 지운다
+            $('#cards-box').empty();
+            // 2. 메모 목록을 불러와서 HTML로 붙인다
+            $.ajax({
+                type: 'GET',
+                url: '/api/memo',
+                success: function (response) {
+                    for (let i = 0; i < response.length; i++) {
+                        let message = response[i];
+                        let idx = message['idx'];
+                        let created = message['created'];
+                        let content = message['content'];
+                        addHTML(idx, created, content);
+                    }
+                }
+            })
+        }
+
+        // 메모 하나를 HTML로 만들어서 body 태그 내 원하는 곳에 붙이는 메서드
+        function addHTML(idx, created, content) {
+            // 1. HTML 태그를 만든다
+            let tempHtml = `<div class="card">
+                            <!-- date/username 영역 -->
+                                <div class="metadata">
+                                <div class="date">
+                                ${created}
+                                </div>
+                                <div id="${idx}-username" class="username">
+                                ${idx}
+                                </div>
+                                </div>
+                                    <!-- contents 조회/수정 영역-->
+                                <div class="contents">
+                                <div id="${idx}-contents" class="text">
+                                ${content}
+                                </div>
+                                <div id="${idx}-editarea" class="edit">
+                                <textarea id="${idx}-textarea" class="te-edit" name="" id="" cols="30" rows="5"></textarea>
+                                </div>
+                                </div>
+                                    <!-- 버튼 영역-->
+                                <div class="footer">
+                                    <button id="button-edit" alt="" onclick="editPost('${idx}')">수정</button>
+                                    <button id="button-delete" alt="" onclick="deleteOne('${idx}')">삭제</button>
+                                    <button id="button-confirm" alt="" onclick="submitEdit('${idx}')">확인</button>
+                                </div>
+                            </div>`;
+            // 2. #cards-box 에 HTML을 붙인다
+            $('#cards-box').append(tempHtml);
+            }
+
+            // 메모를 생성하는 메서드
+            function writePost() {
+            // 1. 작성한 메모를 불러온다
+            let content = $('#content').val();
+            console.log(content);
+            // 2. 작성한 메모가 올바른지 isValidContents 함수를 통해 확인한다
+            if (isValidContents(content) == false) {
+            return;
+            }
+            // 4. 전달할 data JSON으로 만든다
+            let data = {'content': content};
+            // 5. POST /api/memo 에 data를 전달합니다.
+            $.ajax({
+                type: "POST",
+                url: "/api/memo",
+                data: {content : content},
+                success: function (response) {
+                alert('메모가 성공적으로 작성되었습니다.');
+                window.location.reload();
+                }
+            });
+            }
+
+            // 메모를 수정하는 메서드
+            function submitEdit(idx) {
+            // 1. 작성 대상 메모의 username과 contents 를 확인한다
+            let username = $(`#${idx}-username`).text().trim();
+            let content = $(`#${idx}-textarea`).val().trim();
+
+            // 2. 작성한 메모가 올바른지 isValidContents 함수를 통해 확인한다
+            if (isValidContents(content) == false) {
+            return;
+            }
+
+            // 3. 전달할 data JSON으로 만든다
+            let data = {'username': username, 'content': content};
+
+            // 4. PUT /api/memos/{id} 에 data를 전달한다
+            $.ajax({
+                type: "POST",
+                url: `/api/memo/${idx}`,
+                data: {'username': username, 'content': content},
+                success: function (response) {
+                alert('메모 수정에 성공하였습니다.');
+                window.location.reload();
+                }
+            });
+            }
+
+            // 메모를 삭제하는 메서드
+            function deleteOne(idx) {
+            // 1. DELETE /api/memos/{id} 에 요청해서 메모를 삭제한다
+            $.ajax({
+                type: "GET",
+                url: `/api/memo/${idx}`,
+                success: function (response) {
+                alert('메모 삭제에 성공하였습니다.');
+                window.location.reload();
+                }
+            })
+            }
+    </script>
+</head>
+
+<body>
+<div class="background-header">
+
+</div>
+<div class="background-body">
+
+</div>
+<div class="wrap">
+    <div class="header">
+        <h2>MEMO Service</h2>
+        <p>
+            (=^-ω-^=) 무슨 일이 일어나고 있냥?
+        </p>
+    </div>
+    <div class="area-write">
+        <textarea class="field" placeholder="기억하고 싶은 것들을 입력해주세요" name="content" id="content" cols="30" rows="10"></textarea>
+        <button id="button-post" onclick="writePost()">입력</button>
+    </div>
+    <div id="cards-box" class="area-read"> 
+        </div>
+    </div>
+</div>
+</body>
+
+</html>
